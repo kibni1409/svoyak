@@ -40,25 +40,25 @@ npm run check-types
 
 `*.vercel.app` часто **не открывается** из российских сетей (таймаут / `CONNECTION_RESET`), хотя сам деплой живой. Для стенда лучше **Cloudflare Pages**.
 
-### Cloudflare Pages (рекомендуется)
+### Layero (рекомендуется для РФ) — `*.layero.app`
 
-1. [dash.cloudflare.com](https://dash.cloudflare.com) → Workers & Pages → Create → Pages → Connect to Git
-2. Репозиторий `kibni1409/svoyak`, ветка `main`
-3. Build settings:
-   - Framework preset: Vite
-   - Build command: `npm run build`
-   - Build output directory: `dist`
-4. Deploy
+В репозитории есть `layero.json` (fullstack) + `server/proxy.mjs`:
 
-Прокси `/si/*` уже в `functions/si/[[path]].js` (same-origin → SIGame).
+- фронт: Vite → `dist`
+- бэкенд: Node-прокси, `apiPrefix: /si` → серверы SIGame
 
-Проверка после деплоя:
-- `https://<проект>.pages.dev/` — меню
-- `https://<проект>.pages.dev/si/discovery` — JSON серверов
+После `git push` в connected-репозиторий Layero пересоберёт сам.
 
-### Vercel
+Проверка:
+- `https://<проект>.layero.app/` — меню
+- `https://<проект>.layero.app/si/discovery` — **JSON**, не HTML
 
-В корне есть `vercel.json` с rewrite `/si/*`. Если сайт не открывается — это сеть до Vercel, не обязательно баг приложения. Попробуй другой VPN / мобильный интернет или Cloudflare Pages выше.
+Если `/si/discovery` отдаёт HTML — прокси не поднялся (смотри логи runtime в Layero).
+
+### Cloudflare Pages / Vercel
+
+Для аудитории вне РФ: `functions/si/[[path]].js` (CF) или `vercel.json`.  
+`*.vercel.app` из домашних сетей РФ часто требует VPN/HAPP.
 
 ## Конфиг серверов и CORS
 

@@ -1,0 +1,16 @@
+{
+	"$schema": "https://layero.ru/schema/layero-v2.json",
+	"layout": "fullstack",
+	"apiPrefix": "/si",
+	"frontend": {
+		"framework": "vite",
+		"output": "dist",
+		"node": "22"
+	},
+	"backend": {
+		"root": "server",
+		"runtime": "node_web",
+		"start": "node proxy.mjs",
+		"port": 3000
+	}
+}
