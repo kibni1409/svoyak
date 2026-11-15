@@ -1,0 +1,19 @@
+Svoyak
+Copyright (C) 2026 Svoyak contributors
+
+This product is a derivative work based on SIOnline (SIGame web client)
+by Vladimir Khil: https://github.com/VladimirKhil/SIOnline
+
+SIOnline is licensed under the GNU General Public License v3.0.
+See the LICENSE file in this repository and:
+https://github.com/VladimirKhil/SIOnline/blob/master/LICENSE
+
+Official game servers / discovery used for interoperability:
+- https://vladimirkhil.com/api/si/servers
+- https://server2.vladimirkhil.com/api/si/servers/
+- Game host example: https://content.vladimirkhil.com/server
+- Proxy example: https://server2.vladimirkhil.com:8080
+- SIStatistics: https://vladimirkhil.com/sistatistics
+- AppRegistry: https://vladimirkhil.com/appregistry
+
+SIGame, SIOnline, and related marks belong to their respective owners.

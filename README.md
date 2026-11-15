@@ -1,32 +1,55 @@
-# React + TypeScript + Vite
+# Svoyak
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Мобильный клиент [SIGame](https://sigame.vladimirkhil.com/) на протоколе [SIOnline](https://github.com/VladimirKhil/SIOnline).
 
-Currently, two official plugins are available:
+Совместим с официальными комнатами: вы можете играть с друзьями на оригинальном клиенте.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Стек
 
-## React Compiler
+- React 17 + Redux Toolkit + SignalR (как в SIOnline)
+- Vite + SCSS / SCSS Modules (мобильная оболочка)
+- PWA (`vite-plugin-pwa`)
+- Лицензия: **GPL-3.0** (см. `LICENSE`, `NOTICE`)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Команды
 
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run smoke      # проверка discovery официальных серверов
+npm run dev       # http://localhost:5173
+npm run build
+npm run preview -- --host   # раздача сборки в LAN (для установки PWA)
+npm run check-types
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Установка на телефон (PWA)
+
+Манифест и service worker уже в сборке (`vite-plugin-pwa`, иконки в `public/pwa/`).
+
+1. Собери и отдай по сети: `npm run build && npm run preview -- --host`
+2. На телефоне открой `http://<IP-ПК>:4173` (тот же Wi‑Fi)
+
+**Android (Chrome):** меню ⋮ → «Установить приложение» / «Добавить на главный экран».  
+Полноценная установка обычно требует **HTTPS** (localhost — исключение). С HTTP часто остаётся только ярлык «на экран».
+
+**iOS (Safari):** Поделиться → «На экран „Домой“».
+
+После деплоя на домен с HTTPS установка работает как у обычного приложения.
+
+## Конфиг серверов и CORS
+
+Официальный API отдаёт CORS только для `https://sigame.vladimirkhil.com`.
+Поэтому в dev (и на своём домене) запросы идут через same-origin proxy:
+
+- `/si/discovery` → discovery
+- `/si/server` → game host + SignalR
+- `/si/proxy` → запасной SIGame proxy (`server2:8080`)
+
+В настройках есть переключатель **«Использовать прокси-соединение SIGame»** (при HAPP/VPN лучше выключен).
+
+## Структура
+
+- `src/client`, `src/logic`, `src/state`, `src/model` — протокол SIOnline (без изменений по смыслу)
+- `src/components` — экраны SIOnline
+- `src/mobile` — мобильная оболочка (SCSS Modules)
+- `src/scss/mobile.scss` — mobile-first overrides
