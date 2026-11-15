@@ -10,8 +10,24 @@ import * as signalR from '@microsoft/signalr';
 import * as signalRMsgPack from '@microsoft/signalr-protocol-msgpack';
 import StorageFilter from './contracts/StorageFilter';
 import IGameServerListener from './IGameServerListener';
-import { preferLongPollingOnly } from '../utils/siProxy';
+import { preferHttpStreamingTransports, preferLongPollingOnly } from '../utils/siProxy';
 import { nextSignalRRetryDelay } from '../utils/signalRReconnect';
+import { fetchJson, HttpJsonError } from '../utils/fetchJson';
+
+function signalRTransport(): signalR.HttpTransportType {
+	if (preferLongPollingOnly()) {
+		return signalR.HttpTransportType.LongPolling;
+	}
+
+	if (preferHttpStreamingTransports()) {
+		// Layero: no WS — SSE uses far fewer HTTP calls than LongPolling.
+		return signalR.HttpTransportType.ServerSentEvents | signalR.HttpTransportType.LongPolling;
+	}
+
+	return signalR.HttpTransportType.WebSockets
+		| signalR.HttpTransportType.ServerSentEvents
+		| signalR.HttpTransportType.LongPolling;
+}
 
 /** Represents a connection to a SIGame Server. */
 export default class GameServerClient implements IGameServerClient {
@@ -39,12 +55,7 @@ export default class GameServerClient implements IGameServerClient {
 				nextRetryDelayInMilliseconds: nextSignalRRetryDelay,
 			})
 			.withUrl(`${runtimeUri}/sionline`, {
-				// LongPolling floods Layero free quota (~20 req/min). Prefer WS; LP only on Vercel.
-				transport: preferLongPollingOnly()
-					? signalR.HttpTransportType.LongPolling
-					: signalR.HttpTransportType.WebSockets
-						| signalR.HttpTransportType.ServerSentEvents
-						| signalR.HttpTransportType.LongPolling,
+				transport: signalRTransport(),
 			})
 			.withHubProtocol(new signalRMsgPack.MessagePackHubProtocol())
 			.withServerTimeout(60000)
@@ -128,41 +139,35 @@ export default class GameServerClient implements IGameServerClient {
 	}
 
 	async getComputerAccountsAsync(culture: string): Promise<string[]> {
-		const response = await fetch(`${this.serverUri}/api/v1/info/bots`, {
-			headers: {
-				'Accept-Language': culture
-			}
-		});
-
-		if (!response.ok) {
-			throw new Error(`Error while retrieving computer accounts: ${response.status} ${await response.text()}`);
+		try {
+			return await fetchJson<string[]>(`${this.serverUri}/api/v1/info/bots`, {
+				headers: {
+					'Accept-Language': culture
+				}
+			});
+		} catch (error) {
+			throw new Error(`Error while retrieving computer accounts: ${error instanceof Error ? error.message : String(error)}`);
 		}
-
-		return <string[]>(await response.json());
 	}
 
 	async getGameHostInfoAsync(culture: string): Promise<HostInfo> {
-		const response = await fetch(`${this.serverUri}/api/v1/info/host`, {
-			headers: {
-				'Accept-Language': culture
-			}
-		});
-
-		if (!response.ok) {
-			throw new Error(`Error while retrieving host info: ${response.status} ${await response.text()}`);
+		try {
+			return await fetchJson<HostInfo>(`${this.serverUri}/api/v1/info/host`, {
+				headers: {
+					'Accept-Language': culture
+				}
+			});
+		} catch (error) {
+			throw new Error(`Error while retrieving host info: ${error instanceof Error ? error.message : String(error)}`);
 		}
-
-		return <HostInfo>(await response.json());
 	}
 
 	async getStorageFilterAsync(storageId: string): Promise<StorageFilter> {
-		const response = await fetch(`${this.serverUri}/api/v1/info/storage-filter/${storageId}`);
-
-		if (!response.ok) {
+		try {
+			return await fetchJson<StorageFilter>(`${this.serverUri}/api/v1/info/storage-filter/${storageId}`);
+		} catch {
 			return { packages: {}, tags: [] };
 		}
-
-		return <StorageFilter>(await response.json());
 	}
 
 	getGamesSliceAsync(fromId: number): Promise<Slice<GameInfo>> {
@@ -174,7 +179,7 @@ export default class GameServerClient implements IGameServerClient {
 	}
 
 	async runGameAsync(runGameRequest: RunGameRequest): Promise<RunGameResponse> {
-		const response = await fetch(`${this.serverUri}/api/v1/games`, {
+		return fetchJson<RunGameResponse>(`${this.serverUri}/api/v1/games`, {
 			method: 'POST',
 			headers: {
 				'Accept': 'application/json',
@@ -182,16 +187,10 @@ export default class GameServerClient implements IGameServerClient {
 			},
 			body: JSON.stringify(runGameRequest)
 		});
-
-		if (!response.ok) {
-			// TODO: no special handling is needed for now
-		}
-
-		return <RunGameResponse>(await response.json());
 	}
 
 	async runAutoGameAsync(runAutoGameRequest: RunAutoGameRequest): Promise<RunGameResponse> {
-		const response = await fetch(`${this.serverUri}/api/v1/games/auto`, {
+		return fetchJson<RunGameResponse>(`${this.serverUri}/api/v1/games/auto`, {
 			method: 'POST',
 			headers: {
 				'Accept': 'application/json',
@@ -199,25 +198,18 @@ export default class GameServerClient implements IGameServerClient {
 			},
 			body: JSON.stringify(runAutoGameRequest)
 		});
-
-		if (!response.ok) {
-			// TODO: no special handling is needed for now
-		}
-
-		return <RunGameResponse>(await response.json());
 	}
 
 	async getGameByPinAsync(pin: number): Promise<GetGameByPinResponse | null> {
-		const response = await fetch(`${this.serverUri}/api/v1/games?pin=${pin}`);
-
-		if (!response.ok) {
-			if (response.status === 404) {
+		try {
+			return await fetchJson<GetGameByPinResponse>(`${this.serverUri}/api/v1/games?pin=${pin}`);
+		} catch (error) {
+			if (error instanceof HttpJsonError && error.status === 404) {
 				return null;
 			}
 
-			throw new Error(`Error while retrieving game by pin: ${response.status} ${await response.text()}`);
+			const message = error instanceof Error ? error.message : String(error);
+			throw new Error(`Error while retrieving game by pin: ${message}`);
 		}
-
-		return <GetGameByPinResponse>(await response.json());
 	}
 }

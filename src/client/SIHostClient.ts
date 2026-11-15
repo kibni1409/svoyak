@@ -7,8 +7,22 @@ import JoinGame2Result from './contracts/JoinGame2Result';
 import JoinGameRequest from './contracts/JoinGameRequest';
 import ServerRole from './contracts/ServerRole';
 import DefaultEndpoints from './system/DefaultEndpoints';
-import { preferLongPollingOnly } from '../utils/siProxy';
+import { preferHttpStreamingTransports, preferLongPollingOnly } from '../utils/siProxy';
 import { nextSignalRRetryDelay } from '../utils/signalRReconnect';
+
+function signalRTransport(): signalR.HttpTransportType {
+	if (preferLongPollingOnly()) {
+		return signalR.HttpTransportType.LongPolling;
+	}
+
+	if (preferHttpStreamingTransports()) {
+		return signalR.HttpTransportType.ServerSentEvents | signalR.HttpTransportType.LongPolling;
+	}
+
+	return signalR.HttpTransportType.WebSockets
+		| signalR.HttpTransportType.ServerSentEvents
+		| signalR.HttpTransportType.LongPolling;
+}
 
 export class ReconnectError extends Error {
 	constructor(public result: JoinGame2Result) {
@@ -43,13 +57,7 @@ export default class SIHostClient implements ISIHostClient {
 				}),
 			});
 
-		const transportOptions = preferLongPollingOnly()
-			? { transport: signalR.HttpTransportType.LongPolling }
-			: {
-				transport: signalR.HttpTransportType.WebSockets
-					| signalR.HttpTransportType.ServerSentEvents
-					| signalR.HttpTransportType.LongPolling,
-			};
+		const transportOptions = { transport: signalRTransport() };
 
 		if (authToken) {
 			connectionBuilder.withUrl(connectionUrl, {

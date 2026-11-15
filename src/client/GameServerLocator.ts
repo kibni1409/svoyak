@@ -1,6 +1,7 @@
 import ServerInfo from './contracts/ServerInfo';
 import localization from '../model/resources/localization';
 import { rewriteSiUri, useSameOriginSiProxy } from '../utils/siProxy';
+import { fetchJson } from '../utils/fetchJson';
 
 const OFFICIAL_DISCOVERY = 'https://vladimirkhil.com/api/si/servers';
 const OFFICIAL_DISCOVERY_FALLBACK = 'https://server2.vladimirkhil.com/api/si/servers/';
@@ -27,16 +28,17 @@ function rewriteToSameOrigin(info: ServerInfo): ServerInfo {
 
 async function getServerInfoFromUri(serverDiscoveryUri: string): Promise<ServerInfo> {
 	const separator = serverDiscoveryUri.includes('?') ? '&' : serverDiscoveryUri.endsWith('/') ? '?' : '?';
-	const serverUrisResponse = await fetch(`${serverDiscoveryUri}${separator}r=${Math.random()}`);
 
-	if (!serverUrisResponse.ok) {
+	let serverUris: ServerInfo[];
+	try {
+		serverUris = await fetchJson<ServerInfo[]>(`${serverDiscoveryUri}${separator}r=${Math.random()}`);
+	} catch (error) {
 		throw new Error(localization.formatString(
 			localization.serverDiscoveryBroken,
-			serverUrisResponse.status.toString(),
-			await serverUrisResponse.text()) as string);
+			'0',
+			error instanceof Error ? error.message : String(error),
+		) as string);
 	}
-
-	const serverUris = (await serverUrisResponse.json()) as ServerInfo[];
 
 	if (!serverUris || serverUris.length === 0) {
 		throw new Error(localization.serverUrisBroken);

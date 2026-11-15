@@ -1,11 +1,10 @@
 /**
  * Same-origin SIGame proxy for Layero fullstack (apiPrefix: /si).
- * Supports HTTP + WebSocket (SignalR). Path may be /si/... or /... .
+ * HTTP always works. WebSocket upgrade is optional (Layero edge is HTTP-first).
  */
 import http from 'node:http'
 import https from 'node:https'
 import { URL } from 'node:url'
-import { WebSocketServer, WebSocket } from 'ws'
 
 const RULES = [
 	['discovery2', 'https://server2.vladimirkhil.com/api/si/servers'],
@@ -13,8 +12,10 @@ const RULES = [
 	['sistorage', 'https://vladimirkhil.com/sistorage'],
 	['sicontent2', 'https://content.vladimirkhil.com/sicontent'],
 	['sicontent', 'https://vladimirkhil.com/sicontent'],
+	['content-proxy', 'https://content.vladimirkhil.com:8080'],
 	['server', 'https://content.vladimirkhil.com/server'],
 	['gamehost0', 'https://vladimirkhil.com/sigameserver-0'],
+	['proxy', 'https://server2.vladimirkhil.com:8080'],
 ]
 
 function resolveTarget(pathname) {
@@ -38,7 +39,6 @@ function copyHttpHeaders(req, targetHost) {
 
 function copyWsClientHeaders(req, targetHost) {
 	const headers = { ...req.headers, host: targetHost }
-	// Let `ws` generate a fresh handshake toward upstream
 	delete headers.connection
 	delete headers.upgrade
 	delete headers['sec-websocket-key']
@@ -79,55 +79,6 @@ function toWsUrl(httpUrl) {
 	return httpUrl.replace(/^http:/i, 'ws:').replace(/^https:/i, 'wss:')
 }
 
-function pipeSockets(a, b) {
-	const pending = []
-
-	a.on('message', (data, isBinary) => {
-		if (b.readyState === WebSocket.OPEN) {
-			b.send(data, { binary: isBinary })
-		} else if (b.readyState === WebSocket.CONNECTING) {
-			pending.push({ data, isBinary })
-		}
-	})
-
-	b.on('open', () => {
-		for (const item of pending) {
-			if (b.readyState === WebSocket.OPEN) {
-				b.send(item.data, { binary: item.isBinary })
-			}
-		}
-		pending.length = 0
-	})
-
-	b.on('message', (data, isBinary) => {
-		if (a.readyState === WebSocket.OPEN) {
-			a.send(data, { binary: isBinary })
-		}
-	})
-
-	const closeBoth = (code, reason) => {
-		try {
-			if (a.readyState === WebSocket.OPEN || a.readyState === WebSocket.CONNECTING) {
-				a.close(code, reason)
-			}
-		} catch {
-			a.terminate()
-		}
-		try {
-			if (b.readyState === WebSocket.OPEN || b.readyState === WebSocket.CONNECTING) {
-				b.close(code, reason)
-			}
-		} catch {
-			b.terminate()
-		}
-	}
-
-	a.on('close', (code, reason) => closeBoth(code, reason))
-	b.on('close', (code, reason) => closeBoth(code, reason))
-	a.on('error', () => closeBoth(1011, 'socket error'))
-	b.on('error', () => closeBoth(1011, 'upstream error'))
-}
-
 const port = Number(process.env.PORT || 3000)
 const server = http.createServer((req, res) => {
 	const pathname = (req.url || '/').split('?')[0]
@@ -149,27 +100,88 @@ const server = http.createServer((req, res) => {
 	proxyHttp(req, res, target + search)
 })
 
-const wss = new WebSocketServer({ noServer: true })
+async function enableWebSocketProxy() {
+	try {
+		const { WebSocketServer, WebSocket } = await import('ws')
 
-server.on('upgrade', (req, socket, head) => {
-	const pathname = (req.url || '/').split('?')[0]
-	const search = (req.url || '').includes('?') ? req.url.slice(req.url.indexOf('?')) : ''
-	const targetHttp = resolveTarget(pathname)
+		const wss = new WebSocketServer({ noServer: true })
 
-	if (!targetHttp) {
-		socket.destroy()
-		return
+		const pipeSockets = (a, b) => {
+			const pending = []
+
+			a.on('message', (data, isBinary) => {
+				if (b.readyState === WebSocket.OPEN) {
+					b.send(data, { binary: isBinary })
+				} else if (b.readyState === WebSocket.CONNECTING) {
+					pending.push({ data, isBinary })
+				}
+			})
+
+			b.on('open', () => {
+				for (const item of pending) {
+					if (b.readyState === WebSocket.OPEN) {
+						b.send(item.data, { binary: item.isBinary })
+					}
+				}
+				pending.length = 0
+			})
+
+			b.on('message', (data, isBinary) => {
+				if (a.readyState === WebSocket.OPEN) {
+					a.send(data, { binary: isBinary })
+				}
+			})
+
+			const closeBoth = (code, reason) => {
+				try {
+					if (a.readyState === WebSocket.OPEN || a.readyState === WebSocket.CONNECTING) {
+						a.close(code, reason)
+					}
+				} catch {
+					a.terminate()
+				}
+				try {
+					if (b.readyState === WebSocket.OPEN || b.readyState === WebSocket.CONNECTING) {
+						b.close(code, reason)
+					}
+				} catch {
+					b.terminate()
+				}
+			}
+
+			a.on('close', (code, reason) => closeBoth(code, reason))
+			b.on('close', (code, reason) => closeBoth(code, reason))
+			a.on('error', () => closeBoth(1011, 'socket error'))
+			b.on('error', () => closeBoth(1011, 'upstream error'))
+		}
+
+		server.on('upgrade', (req, socket, head) => {
+			const pathname = (req.url || '/').split('?')[0]
+			const search = (req.url || '').includes('?') ? req.url.slice(req.url.indexOf('?')) : ''
+			const targetHttp = resolveTarget(pathname)
+
+			if (!targetHttp) {
+				socket.destroy()
+				return
+			}
+
+			const upstreamUrl = toWsUrl(targetHttp + search)
+			const upstreamHeaders = copyWsClientHeaders(req, new URL(targetHttp).host)
+
+			wss.handleUpgrade(req, socket, head, (clientWs) => {
+				const upstream = new WebSocket(upstreamUrl, { headers: upstreamHeaders })
+				pipeSockets(clientWs, upstream)
+			})
+		})
+
+		console.log('WebSocket upgrade proxy enabled')
+	} catch (error) {
+		console.warn('WebSocket proxy disabled (ws unavailable):', error?.message || error)
 	}
+}
 
-	const upstreamUrl = toWsUrl(targetHttp + search)
-	const upstreamHeaders = copyWsClientHeaders(req, new URL(targetHttp).host)
-
-	wss.handleUpgrade(req, socket, head, (clientWs) => {
-		const upstream = new WebSocket(upstreamUrl, { headers: upstreamHeaders })
-		pipeSockets(clientWs, upstream)
-	})
-})
+await enableWebSocketProxy()
 
 server.listen(port, '0.0.0.0', () => {
-	console.log(`Svoyak SI proxy (HTTP+WS) listening on 0.0.0.0:${port}`)
+	console.log(`Svoyak SI proxy listening on 0.0.0.0:${port}`)
 })

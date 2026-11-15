@@ -11,6 +11,7 @@
 		"root": "server",
 		"runtime": "node_web",
 		"start": "node proxy.mjs",
+		"startCommand": "node proxy.mjs",
 		"port": 3000
 	}
 }

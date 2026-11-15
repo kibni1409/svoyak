@@ -11,13 +11,22 @@ export function useSameOriginSiProxy(): boolean {
 	return window.location.hostname !== 'sigame.vladimirkhil.com'
 }
 
-/** Prefer WebSockets on Layero/local; LongPolling-only on Vercel (WS upgrade often hangs). */
+/** Vercel: LongPolling only (WS upgrade often hangs). */
 export function preferLongPollingOnly(): boolean {
 	if (typeof window === 'undefined') {
 		return false
 	}
 
 	return window.location.hostname.endsWith('.vercel.app')
+}
+
+/**
+ * Layero/same-origin proxy: avoid WebSockets — edge is HTTP-oriented / serverless,
+ * WS upgrade fails and reconnect storms return SPA HTML as "JSON".
+ * Prefer ServerSentEvents, then LongPolling.
+ */
+export function preferHttpStreamingTransports(): boolean {
+	return useSameOriginSiProxy() && !preferLongPollingOnly()
 }
 
 function originBase(): string {

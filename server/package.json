@@ -3,6 +3,9 @@
 	"private": true,
 	"type": "module",
 	"version": "0.1.0",
+	"scripts": {
+		"start": "node proxy.mjs"
+	},
 	"dependencies": {
 		"ws": "^8.18.3"
 	}

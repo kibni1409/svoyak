@@ -70,6 +70,8 @@ function getLocalizedError(error: Error): string {
 		return localization.failedToCompleteNegotiationWithTheServer;
 	} else if (error.message.includes('429') || /quota exceeded/i.test(error.message)) {
 		return localization.apiCallsQuotaExceeded;
+	} else if (/HTML instead of JSON|Unexpected token '<'/i.test(error.message)) {
+		return localization.failedToFetch;
 	} else if (error.message.startsWith('HTTP 503')) {
 		return 'Service Temporarily Unavailable';
 	} else {
