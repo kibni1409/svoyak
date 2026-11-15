@@ -7,6 +7,7 @@ import JoinGame2Result from './contracts/JoinGame2Result';
 import JoinGameRequest from './contracts/JoinGameRequest';
 import ServerRole from './contracts/ServerRole';
 import DefaultEndpoints from './system/DefaultEndpoints';
+import { useSameOriginSiProxy } from '../utils/siProxy';
 
 export class ReconnectError extends Error {
 	constructor(public result: JoinGame2Result) {
@@ -44,12 +45,17 @@ export default class SIHostClient implements ISIHostClient {
 				}
 			});
 
+		const transportOptions = useSameOriginSiProxy()
+			? { transport: signalR.HttpTransportType.LongPolling }
+			: {};
+
 		if (authToken) {
 			connectionBuilder.withUrl(connectionUrl, {
+				...transportOptions,
 				accessTokenFactory: async () => authToken,
 			});
 		} else {
-			connectionBuilder.withUrl(connectionUrl);
+			connectionBuilder.withUrl(connectionUrl, transportOptions);
 		}
 
 		connectionBuilder.withHubProtocol(new signalRMsgPack.MessagePackHubProtocol());

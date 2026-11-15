@@ -73,9 +73,18 @@
 			"source": "/si/content-proxy/:path*",
 			"destination": "https://content.vladimirkhil.com:8080/:path*"
 		},
-		{
-			"source": "/((?!si/).*)",
-			"destination": "/index.html"
-		}
+		{ "source": "/loading", "destination": "/index.html" },
+		{ "source": "/license", "destination": "/index.html" },
+		{ "source": "/login", "destination": "/index.html" },
+		{ "source": "/about", "destination": "/index.html" },
+		{ "source": "/menu", "destination": "/index.html" },
+		{ "source": "/create", "destination": "/index.html" },
+		{ "source": "/lobby", "destination": "/index.html" },
+		{ "source": "/room", "destination": "/index.html" },
+		{ "source": "/join", "destination": "/index.html" },
+		{ "source": "/joinByPin", "destination": "/index.html" },
+		{ "source": "/demo", "destination": "/index.html" },
+		{ "source": "/siquester", "destination": "/index.html" },
+		{ "source": "/siquester/package", "destination": "/index.html" }
 	]
 }

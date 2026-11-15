@@ -100,6 +100,7 @@ export default defineConfig({
 			},
 			workbox: {
 				navigateFallback: '/index.html',
+				navigateFallbackDenylist: [/^\/si\//, /^\/assets\//, /\.\w+$/],
 				globPatterns: ['**/*.{js,css,html,ico,svg,png,woff2,mp3}'],
 			},
 			devOptions: {

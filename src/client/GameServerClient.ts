@@ -10,6 +10,7 @@ import * as signalR from '@microsoft/signalr';
 import * as signalRMsgPack from '@microsoft/signalr-protocol-msgpack';
 import StorageFilter from './contracts/StorageFilter';
 import IGameServerListener from './IGameServerListener';
+import { useSameOriginSiProxy } from '../utils/siProxy';
 
 /** Represents a connection to a SIGame Server. */
 export default class GameServerClient implements IGameServerClient {
@@ -37,8 +38,10 @@ export default class GameServerClient implements IGameServerClient {
 				nextRetryDelayInMilliseconds: (retryContext: signalR.RetryContext) => 1000 * (retryContext.previousRetryCount + 1)
 			})
 			.withUrl(`${runtimeUri}/sionline`, {
-				// Prefer WS, but keep LongPolling for HTTP proxies (e.g. HAPP) that break WebSocket upgrades
-				transport: signalR.HttpTransportType.WebSockets | signalR.HttpTransportType.LongPolling,
+				// Vercel/HTTP proxies often hang on WebSocket upgrade (esp. TV browsers) — use LongPolling there
+				transport: useSameOriginSiProxy()
+					? signalR.HttpTransportType.LongPolling
+					: signalR.HttpTransportType.WebSockets | signalR.HttpTransportType.LongPolling,
 			})
 			.withHubProtocol(new signalRMsgPack.MessagePackHubProtocol());
 
