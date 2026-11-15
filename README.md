@@ -36,11 +36,29 @@ npm run check-types
 
 После деплоя на домен с HTTPS установка работает как у обычного приложения.
 
-## Деплой на Vercel
+## Деплой (важно для РФ)
 
-В корне есть `vercel.json`: same-origin прокси `/si/*` → серверы SIGame (без него онлайн не работает — CORS только для официального домена).
+`*.vercel.app` часто **не открывается** из российских сетей (таймаут / `CONNECTION_RESET`), хотя сам деплой живой. Для стенда лучше **Cloudflare Pages**.
 
-После пуша в репозиторий дождись деплоя и проверь `https://<твой-проект>.vercel.app/si/discovery` — должен ответить JSON, а не 404.
+### Cloudflare Pages (рекомендуется)
+
+1. [dash.cloudflare.com](https://dash.cloudflare.com) → Workers & Pages → Create → Pages → Connect to Git
+2. Репозиторий `kibni1409/svoyak`, ветка `main`
+3. Build settings:
+   - Framework preset: Vite
+   - Build command: `npm run build`
+   - Build output directory: `dist`
+4. Deploy
+
+Прокси `/si/*` уже в `functions/si/[[path]].js` (same-origin → SIGame).
+
+Проверка после деплоя:
+- `https://<проект>.pages.dev/` — меню
+- `https://<проект>.pages.dev/si/discovery` — JSON серверов
+
+### Vercel
+
+В корне есть `vercel.json` с rewrite `/si/*`. Если сайт не открывается — это сеть до Vercel, не обязательно баг приложения. Попробуй другой VPN / мобильный интернет или Cloudflare Pages выше.
 
 ## Конфиг серверов и CORS
 
