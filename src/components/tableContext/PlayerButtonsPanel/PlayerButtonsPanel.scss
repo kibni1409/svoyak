@@ -1,0 +1,51 @@
+.playerButtonsPanel {
+	display: flex;
+	flex-direction: row;
+	align-items: stretch;
+	gap: 8px;
+	margin: 0;
+	height: 100%;
+	width: 100%;
+	padding: 0 4px;
+	box-sizing: border-box;
+}
+
+.playerButtonsPanel button {
+	flex: 1 1 0;
+	font-size: 25px;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	border-radius: 12px;
+	margin: 0;
+	min-height: 100%;
+}
+
+@media screen and (max-width: 899px) {
+	.playerButtonsPanel {
+		gap: 10px;
+		padding: 4px 8px 10px;
+	}
+
+	.playerButtonsPanel button {
+		font-size: clamp(18px, 5.2vw, 28px);
+		border-radius: 14px;
+		min-height: 72px;
+		padding: 14px 8px;
+		box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+	}
+
+	/* Always show a solid hit target on phone, even when not "armed" */
+	.playerButtonsPanel .passButton:not(.hidden) {
+		background: #c9a227;
+		color: #1a1a1a;
+	}
+
+	.playerButtonsPanel .playerButton.mainAction:not(.hidden) {
+		background: rgba(255, 255, 255, 0.18);
+		color: #fff;
+	}
+
+	.playerButtonsPanel .playerButton.mainAction.can-press:not(.hidden):not(:disabled) {
+		background: linear-gradient(360deg, #ff4b23 0%, #ff7c1e 100%);
+	}
+}

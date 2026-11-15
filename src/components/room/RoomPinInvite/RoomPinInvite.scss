@@ -1,0 +1,72 @@
+.roomPinInvite {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+	gap: 28px;
+	padding: 16px 24px;
+	margin: 12px auto;
+	max-width: 560px;
+	background: rgba(255, 255, 255, 0.08);
+	border: 1px solid rgba(255, 255, 255, 0.18);
+	border-radius: 16px;
+	box-sizing: border-box;
+}
+
+.roomPinInvite.compact {
+	gap: 16px;
+	padding: 10px 14px;
+	margin: 8px;
+}
+
+.roomPinInvite__qr {
+	flex: 0 0 auto;
+	padding: 10px;
+	background: #fff;
+	border-radius: 12px;
+	line-height: 0;
+}
+
+.roomPinInvite__meta {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 6px;
+	min-width: 0;
+}
+
+.roomPinInvite__label {
+	font-size: 16px;
+	color: rgba(255, 255, 255, 0.75);
+}
+
+.roomPinInvite__pin {
+	font-size: clamp(36px, 6vw, 64px);
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	color: #fff;
+	line-height: 1.1;
+}
+
+.roomPinInvite__hint {
+	font-size: 14px;
+	color: rgba(255, 255, 255, 0.55);
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+}
+
+.roomPinInvite__load {
+	min-width: 160px;
+	min-height: 48px;
+}
+
+@media screen and (max-width: 600px) {
+	.roomPinInvite {
+		flex-direction: column;
+		text-align: center;
+	}
+
+	.roomPinInvite__meta {
+		align-items: center;
+	}
+}

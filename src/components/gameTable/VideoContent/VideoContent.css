@@ -1,0 +1,6 @@
+.video-host {
+	overflow: hidden;
+	display: flex;
+    justify-content: center;
+	position: relative;
+}

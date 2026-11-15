@@ -1,0 +1,28 @@
+/* Extra mobile polish layered on top of SIOnline SCSS. */
+
+.app.svoyakMobile {
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 900px) {
+  .app.svoyakMobile .login .enter {
+    width: min(100%, 320px);
+    border-radius: 12px;
+    font-weight: 600;
+  }
+
+  .app.svoyakMobile .joinByPin input,
+  .app.svoyakMobile input[type='text'],
+  .app.svoyakMobile input[type='password'],
+  .app.svoyakMobile input[type='number'] {
+    min-height: 48px;
+    border-radius: 12px;
+    padding-inline: 14px;
+  }
+
+  .app.svoyakMobile .dialog {
+    max-width: 100vw;
+    max-height: calc(100dvh - 24px);
+  }
+}
