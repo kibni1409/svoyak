@@ -37,6 +37,7 @@ import { logEvent } from 'firebase/analytics';
 
 import TvRemoteBar from '../../tv/TvRemoteBar/TvRemoteBar';
 import RoomPinInvite from '../../room/RoomPinInvite/RoomPinInvite';
+import SettingsButton from '../../panels/SettingsButton/SettingsButton';
 
 import './Room.css';
 import closeSvg from '../../../../assets/images/close.svg';
@@ -218,6 +219,7 @@ export function Room(props: RoomProps): JSX.Element {
 							<div className="tvModeTopBar">
 								<GameState />
 								<RoundProgress />
+								<SettingsButton />
 							</div>
 						)}
 

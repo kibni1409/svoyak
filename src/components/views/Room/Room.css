@@ -19,6 +19,13 @@
     padding: 8px 20px;
 }
 
+.gameMain.tvMode .tvModeTopBar .settingsButton {
+    flex: 0 0 auto;
+    height: 44px;
+    width: 44px;
+    padding: 8px;
+}
+
 .gameMain.tvMode .tableArea {
     flex: 1 1 auto;
     min-height: 0;

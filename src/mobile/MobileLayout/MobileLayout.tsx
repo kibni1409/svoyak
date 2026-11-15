@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { useAppSelector } from '../../state/hooks'
-import TvModeToggle from '../../components/tv/TvModeToggle/TvModeToggle'
 import styles from './MobileLayout.module.scss'
 
 type TMobileLayoutProps = {
@@ -24,7 +23,6 @@ export const MobileLayout: React.FC<TMobileLayoutProps> = ({ children }) => {
 					<span>мобильный клиент · серверы SIGame</span>
 				</div>
 			) : null}
-			<TvModeToggle />
 			<div className={styles.content}>{children}</div>
 		</div>
 	)
