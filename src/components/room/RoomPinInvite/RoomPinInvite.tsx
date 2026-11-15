@@ -1,21 +1,15 @@
 import * as React from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import localization from '../../../model/resources/localization';
-import Path from '../../../model/enums/Path';
 import { useAppDispatch, useAppSelector } from '../../../state/hooks';
 import { getPin } from '../../../state/room2Slice';
+import { buildJoinByPinUrl } from '../../../utils/inviteLink';
 
 import './RoomPinInvite.scss';
 
 interface RoomPinInviteProps {
 	compact?: boolean;
 	className?: string;
-}
-
-function buildJoinByPinUrl(pin: string): string {
-	const url = new URL(Path.JoinByPin, window.location.origin);
-	url.searchParams.set('pin', pin);
-	return url.toString();
 }
 
 /** PIN + QR so friends can join from phones. */

@@ -29,10 +29,11 @@ function readPinFromUrl(): number {
 }
 
 export default function JoinByPin(): JSX.Element {
-	const [pin, setPin] = React.useState(readPinFromUrl);
 	const appDispatch = useAppDispatch();
 	const user = useAppSelector(state => state.user);
 	const online = useAppSelector(state => state.online2);
+	const navigationPin = useAppSelector(state => state.ui.navigation.pin);
+	const [pin, setPin] = React.useState(() => navigationPin ?? readPinFromUrl());
 
 	const [userName, setUserName] = React.useState(user.login);
 	const authName = useAppSelector(state => state.user.authName);

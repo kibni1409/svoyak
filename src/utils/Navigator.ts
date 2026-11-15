@@ -40,6 +40,12 @@ function saveNavigationState(navigation: INavigationState, dataContext: DataCont
 				dataContext.config.rewriteUrl ? `${dataContext.config.rootUri}?${gameLink}` : null,
 				replaceState,
 			);
+		} else if (navigation.path === Path.JoinByPin && navigation.pin != null) {
+			dataContext.host.saveNavigationState(
+				navigation,
+				dataContext.config.rewriteUrl ? `${dataContext.config.rootUri}?pin=${navigation.pin}` : null,
+				replaceState,
+			);
 		} else {
 			dataContext.host.saveNavigationState(
 				navigation,

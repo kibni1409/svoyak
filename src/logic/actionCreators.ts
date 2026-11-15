@@ -218,7 +218,7 @@ const finishInitializationAsync = (
 			appDispatch(navigate({
 				navigation: {
 					path: Path.Login,
-					callbackState: targetView.path === Path.About || targetView.path === Path.JoinByPin ? { path: Path.Menu } : targetView
+					callbackState: targetView.path === Path.About ? { path: Path.Menu } : targetView
 				},
 				saveState: true,
 			}));

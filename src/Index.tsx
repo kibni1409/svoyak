@@ -310,6 +310,11 @@ function getInitialView(historyState: INavigationState): INavigationState {
 	const hostUri = urlParams.get('host');
 	const packageUri = urlParams.get('packageUri');
 	const packageName = urlParams.get('packageName');
+	const pin = urlParams.get('pin');
+
+	if (pin && /^\d+$/.test(pin)) {
+		return { path: Path.JoinByPin, pin: parseInt(pin, 10) };
+	}
 
 	if (gameId && hostUri) {
 		return { path: Path.JoinRoom, gameId: parseInt(gameId, 10), hostUri };

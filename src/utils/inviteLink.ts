@@ -18,3 +18,10 @@ export function getGameLink(gameId: number, hostUri: string | undefined, siHosts
 
 	return `gameId=${gameId}&host=${encodeURIComponent(hostUri ?? '')}`;
 }
+
+/** Deep link to Join-by-PIN. Must stay on root (`/?pin=`) so getInitialView picks it up. */
+export function buildJoinByPinUrl(pin: string | number): string {
+	const url = new URL('/', window.location.origin);
+	url.searchParams.set('pin', String(pin));
+	return url.toString();
+}
