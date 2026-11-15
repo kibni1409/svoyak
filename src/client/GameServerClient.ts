@@ -10,7 +10,8 @@ import * as signalR from '@microsoft/signalr';
 import * as signalRMsgPack from '@microsoft/signalr-protocol-msgpack';
 import StorageFilter from './contracts/StorageFilter';
 import IGameServerListener from './IGameServerListener';
-import { useSameOriginSiProxy } from '../utils/siProxy';
+import { preferLongPollingOnly } from '../utils/siProxy';
+import { nextSignalRRetryDelay } from '../utils/signalRReconnect';
 
 /** Represents a connection to a SIGame Server. */
 export default class GameServerClient implements IGameServerClient {
@@ -35,16 +36,18 @@ export default class GameServerClient implements IGameServerClient {
 	async connect(runtimeUri: string, listener: IGameServerListener): Promise<void> {
 		const connectionBuilder = new signalR.HubConnectionBuilder()
 			.withAutomaticReconnect({
-				nextRetryDelayInMilliseconds: (retryContext: signalR.RetryContext) => 1000 * (retryContext.previousRetryCount + 1)
+				nextRetryDelayInMilliseconds: nextSignalRRetryDelay,
 			})
 			.withUrl(`${runtimeUri}/sionline`, {
-				// Vercel/HTTP proxies often hang on WebSocket upgrade (esp. TV browsers) — use LongPolling there
-				transport: useSameOriginSiProxy()
+				// LongPolling floods Layero free quota (~20 req/min). Prefer WS; LP only on Vercel.
+				transport: preferLongPollingOnly()
 					? signalR.HttpTransportType.LongPolling
-					: signalR.HttpTransportType.WebSockets | signalR.HttpTransportType.LongPolling,
+					: signalR.HttpTransportType.WebSockets
+						| signalR.HttpTransportType.ServerSentEvents
+						| signalR.HttpTransportType.LongPolling,
 			})
 			.withHubProtocol(new signalRMsgPack.MessagePackHubProtocol())
-			.withServerTimeout(30000)
+			.withServerTimeout(60000)
 			.withKeepAliveInterval(15000);
 
 		this.connection = connectionBuilder.build();

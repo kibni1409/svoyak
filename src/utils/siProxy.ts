@@ -11,6 +11,15 @@ export function useSameOriginSiProxy(): boolean {
 	return window.location.hostname !== 'sigame.vladimirkhil.com'
 }
 
+/** Prefer WebSockets on Layero/local; LongPolling-only on Vercel (WS upgrade often hangs). */
+export function preferLongPollingOnly(): boolean {
+	if (typeof window === 'undefined') {
+		return false
+	}
+
+	return window.location.hostname.endsWith('.vercel.app')
+}
+
 function originBase(): string {
 	return window.location.origin
 }

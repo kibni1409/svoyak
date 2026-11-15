@@ -7,7 +7,8 @@ import JoinGame2Result from './contracts/JoinGame2Result';
 import JoinGameRequest from './contracts/JoinGameRequest';
 import ServerRole from './contracts/ServerRole';
 import DefaultEndpoints from './system/DefaultEndpoints';
-import { useSameOriginSiProxy } from '../utils/siProxy';
+import { preferLongPollingOnly } from '../utils/siProxy';
+import { nextSignalRRetryDelay } from '../utils/signalRReconnect';
 
 export class ReconnectError extends Error {
 	constructor(public result: JoinGame2Result) {
@@ -36,18 +37,19 @@ export default class SIHostClient implements ISIHostClient {
 
 		const connectionBuilder = new signalR.HubConnectionBuilder()
 			.withAutomaticReconnect({
-				nextRetryDelayInMilliseconds: (retryContext: signalR.RetryContext) => {
-					if (this.completed || this.isDisconnecting) {
-						return null;
-					}
-
-					return Math.min(1000 * (retryContext.previousRetryCount + 1), 5000);
-				}
+				nextRetryDelayInMilliseconds: (retryContext: signalR.RetryContext) => nextSignalRRetryDelay(retryContext, {
+					maxDelayMs: 30_000,
+					stop: this.completed || this.isDisconnecting,
+				}),
 			});
 
-		const transportOptions = useSameOriginSiProxy()
+		const transportOptions = preferLongPollingOnly()
 			? { transport: signalR.HttpTransportType.LongPolling }
-			: {};
+			: {
+				transport: signalR.HttpTransportType.WebSockets
+					| signalR.HttpTransportType.ServerSentEvents
+					| signalR.HttpTransportType.LongPolling,
+			};
 
 		if (authToken) {
 			connectionBuilder.withUrl(connectionUrl, {
@@ -60,7 +62,7 @@ export default class SIHostClient implements ISIHostClient {
 
 		connectionBuilder
 			.withHubProtocol(new signalRMsgPack.MessagePackHubProtocol())
-			.withServerTimeout(30000)
+			.withServerTimeout(60000)
 			.withKeepAliveInterval(15000);
 
 		this.connection = connectionBuilder.build();
