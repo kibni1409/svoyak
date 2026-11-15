@@ -3,7 +3,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import localization from '../../../model/resources/localization';
 import { useAppDispatch, useAppSelector } from '../../../state/hooks';
 import { getPin } from '../../../state/room2Slice';
-import { buildJoinByPinUrl } from '../../../utils/inviteLink';
+import { buildRoomInviteUrl } from '../../../utils/inviteLink';
 
 import './RoomPinInvite.scss';
 
@@ -12,12 +12,15 @@ interface RoomPinInviteProps {
 	className?: string;
 }
 
-/** PIN + QR so friends can join from phones. */
+/** Room invite QR (official `?_d…` style) + PIN for verbal share. */
 export default function RoomPinInvite(props: RoomPinInviteProps): JSX.Element | null {
 	const appDispatch = useAppDispatch();
 	const pin = useAppSelector(state => state.room2.pin);
 	const isHost = useAppSelector(state => state.room2.persons.hostName === state.room2.name);
 	const isConnected = useAppSelector(state => state.common.isSIHostConnected);
+	const gameId = useAppSelector(state => state.ui.navigation.gameId);
+	const hostUri = useAppSelector(state => state.ui.navigation.hostUri);
+	const siHosts = useAppSelector(state => state.common.siHosts);
 
 	React.useEffect(() => {
 		if (isHost && isConnected && !pin) {
@@ -29,32 +32,36 @@ export default function RoomPinInvite(props: RoomPinInviteProps): JSX.Element | 
 		return null;
 	}
 
-	if (!pin) {
-		return (
-			<div className={`roomPinInvite ${props.compact ? 'compact' : ''} ${props.className || ''}`}>
-				<button
-					type="button"
-					className="standard roomPinInvite__load"
-					disabled={!isConnected}
-					onClick={() => appDispatch(getPin())}
-				>
-					{localization.getPin}
-				</button>
-			</div>
-		);
-	}
-
-	const joinUrl = buildJoinByPinUrl(pin);
+	const joinUrl = gameId != null
+		? buildRoomInviteUrl(gameId, hostUri, siHosts)
+		: null;
 
 	return (
 		<div className={`roomPinInvite ${props.compact ? 'compact' : ''} ${props.className || ''}`}>
-			<div className="roomPinInvite__qr" title={joinUrl}>
-				<QRCodeSVG value={joinUrl} size={props.compact ? 120 : 200} bgColor="#ffffff" fgColor="#0b1c3f" />
-			</div>
+			{joinUrl ? (
+				<div className="roomPinInvite__qr" title={joinUrl}>
+					<QRCodeSVG value={joinUrl} size={props.compact ? 120 : 200} bgColor="#ffffff" fgColor="#0b1c3f" />
+				</div>
+			) : null}
+
 			<div className="roomPinInvite__meta">
-				<span className="roomPinInvite__label">{localization.scanToJoin}</span>
-				<span className="roomPinInvite__pin" aria-label={localization.pin}>{pin}</span>
-				<span className="roomPinInvite__hint">{localization.pin}</span>
+				{joinUrl ? <span className="roomPinInvite__label">{localization.scanToJoin}</span> : null}
+
+				{pin ? (
+					<>
+						<span className="roomPinInvite__pin" aria-label={localization.pin}>{pin}</span>
+						<span className="roomPinInvite__hint">{localization.pin}</span>
+					</>
+				) : (
+					<button
+						type="button"
+						className="standard roomPinInvite__load"
+						disabled={!isConnected}
+						onClick={() => appDispatch(getPin())}
+					>
+						{localization.getPin}
+					</button>
+				)}
 			</div>
 		</div>
 	);
