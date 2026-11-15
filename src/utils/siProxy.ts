@@ -55,7 +55,7 @@ export function rewriteSiUri(uri: string | null | undefined): string {
 		}
 
 		if (host === 'vladimirkhil.com' && path.startsWith('/sigameserver-0')) {
-			return `${base}/si/gameshost0${path.slice('/sigameserver-0'.length)}`
+			return `${base}/si/gamehost0${path.slice('/sigameserver-0'.length)}`
 		}
 
 		if (host === 'vladimirkhil.com' && path.startsWith('/api/si/servers')) {

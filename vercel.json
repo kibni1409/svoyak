@@ -1,0 +1,81 @@
+{
+	"$schema": "https://openapi.vercel.sh/vercel.json",
+	"rewrites": [
+		{
+			"source": "/si/discovery",
+			"destination": "https://vladimirkhil.com/api/si/servers"
+		},
+		{
+			"source": "/si/discovery/:path*",
+			"destination": "https://vladimirkhil.com/api/si/servers/:path*"
+		},
+		{
+			"source": "/si/discovery2",
+			"destination": "https://server2.vladimirkhil.com/api/si/servers"
+		},
+		{
+			"source": "/si/discovery2/:path*",
+			"destination": "https://server2.vladimirkhil.com/api/si/servers/:path*"
+		},
+		{
+			"source": "/si/sistorage",
+			"destination": "https://vladimirkhil.com/sistorage"
+		},
+		{
+			"source": "/si/sistorage/:path*",
+			"destination": "https://vladimirkhil.com/sistorage/:path*"
+		},
+		{
+			"source": "/si/sicontent",
+			"destination": "https://vladimirkhil.com/sicontent"
+		},
+		{
+			"source": "/si/sicontent/:path*",
+			"destination": "https://vladimirkhil.com/sicontent/:path*"
+		},
+		{
+			"source": "/si/sicontent2",
+			"destination": "https://content.vladimirkhil.com/sicontent"
+		},
+		{
+			"source": "/si/sicontent2/:path*",
+			"destination": "https://content.vladimirkhil.com/sicontent/:path*"
+		},
+		{
+			"source": "/si/server",
+			"destination": "https://content.vladimirkhil.com/server"
+		},
+		{
+			"source": "/si/server/:path*",
+			"destination": "https://content.vladimirkhil.com/server/:path*"
+		},
+		{
+			"source": "/si/gamehost0",
+			"destination": "https://vladimirkhil.com/sigameserver-0"
+		},
+		{
+			"source": "/si/gamehost0/:path*",
+			"destination": "https://vladimirkhil.com/sigameserver-0/:path*"
+		},
+		{
+			"source": "/si/proxy",
+			"destination": "https://server2.vladimirkhil.com:8080"
+		},
+		{
+			"source": "/si/proxy/:path*",
+			"destination": "https://server2.vladimirkhil.com:8080/:path*"
+		},
+		{
+			"source": "/si/content-proxy",
+			"destination": "https://content.vladimirkhil.com:8080"
+		},
+		{
+			"source": "/si/content-proxy/:path*",
+			"destination": "https://content.vladimirkhil.com:8080/:path*"
+		},
+		{
+			"source": "/((?!si/).*)",
+			"destination": "/index.html"
+		}
+	]
+}
