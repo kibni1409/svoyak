@@ -8,8 +8,6 @@ export default async function registerApp(appRegistryServiceUri: string) {
 		return;
 	}
 
-	isRegistered = true;
-
 	try {
 		const appRegistryClient = new AppRegistryClient({ serviceUri: appRegistryServiceUri });
 
@@ -18,7 +16,10 @@ export default async function registerApp(appRegistryServiceUri: string) {
 			osArchitecture: Architecture.X64,
 			osVersion: '10.0.0'
 		});
+
+		isRegistered = true;
 	} catch (e) {
-		console.log(e);
+		// Non-fatal: registry is analytics only; network/CORS/VPN must not block the app
+		console.warn('App registry usage skipped:', e);
 	}
 }

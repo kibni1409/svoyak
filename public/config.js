@@ -8,8 +8,10 @@ config = {
 	registerServiceWorker: false,
 	enableNoSleep: true,
 	askForConsent: false,
-	siStatisticsServiceUri: 'https://vladimirkhil.com/sistatistics',
-	appRegistryServiceUri: 'https://vladimirkhil.com/appregistry',
+	// Optional SIOnline telemetry — direct calls to vladimirkhil.com often fail without VPN/HAPP
+	// and are not required to play. Leave empty for self-hosted / layero / Cloudflare deploys.
+	siStatisticsServiceUri: '',
+	appRegistryServiceUri: '',
 	clearUrls: false,
 };
 
