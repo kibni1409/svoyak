@@ -1,5 +1,8 @@
 {
 	"$schema": "https://openapi.vercel.sh/vercel.json",
+	"buildCommand": "npm run build",
+	"outputDirectory": "dist",
+	"framework": "vite",
 	"rewrites": [
 		{
 			"source": "/si/discovery",
@@ -56,19 +59,6 @@
 		{
 			"source": "/si/gamehost0/:path*",
 			"destination": "https://vladimirkhil.com/sigameserver-0/:path*"
-		},
-		{ "source": "/loading", "destination": "/index.html" },
-		{ "source": "/license", "destination": "/index.html" },
-		{ "source": "/login", "destination": "/index.html" },
-		{ "source": "/about", "destination": "/index.html" },
-		{ "source": "/menu", "destination": "/index.html" },
-		{ "source": "/create", "destination": "/index.html" },
-		{ "source": "/lobby", "destination": "/index.html" },
-		{ "source": "/room", "destination": "/index.html" },
-		{ "source": "/join", "destination": "/index.html" },
-		{ "source": "/joinByPin", "destination": "/index.html" },
-		{ "source": "/demo", "destination": "/index.html" },
-		{ "source": "/siquester", "destination": "/index.html" },
-		{ "source": "/siquester/package", "destination": "/index.html" }
+		}
 	]
 }

@@ -1,6 +1,5 @@
 import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
-import { VitePWA } from 'vite-plugin-pwa'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -49,68 +48,7 @@ export default defineConfig({
 	plugins: [
 		siClientShims(),
 		react(),
-		VitePWA({
-			registerType: 'autoUpdate',
-			// Temporary: unregister broken SW caches that can blank the app on TV/browsers
-			selfDestroying: true,
-			includeAssets: [
-				'favicon.svg',
-				'config.js',
-				'pwa/icon-192.png',
-				'pwa/icon-512.png',
-				'pwa/apple-touch-icon.png',
-			],
-			manifest: {
-				id: '/svoyak',
-				name: 'Svoyak',
-				short_name: 'Svoyak',
-				description: 'Мобильный клиент SIGame (протокол SIOnline)',
-				theme_color: '#0b1c3f',
-				background_color: '#0b1c3f',
-				display: 'standalone',
-				orientation: 'any',
-				start_url: '/',
-				scope: '/',
-				lang: 'ru',
-				categories: ['games', 'entertainment'],
-				icons: [
-					{
-						src: '/pwa/icon-192.png',
-						sizes: '192x192',
-						type: 'image/png',
-						purpose: 'any',
-					},
-					{
-						src: '/pwa/icon-512.png',
-						sizes: '512x512',
-						type: 'image/png',
-						purpose: 'any',
-					},
-					{
-						src: '/pwa/icon-512.png',
-						sizes: '512x512',
-						type: 'image/png',
-						purpose: 'maskable',
-					},
-					{
-						src: '/favicon.svg',
-						sizes: 'any',
-						type: 'image/svg+xml',
-						purpose: 'any',
-					},
-				],
-			},
-			workbox: {
-				navigateFallback: '/index.html',
-				navigateFallbackDenylist: [/^\/si\//, /^\/assets\//, /\.\w+$/],
-				globPatterns: ['**/*.{js,css,html,ico,svg,png,woff2,mp3}'],
-			},
-			devOptions: {
-				// В dev SW обычно выключен; для проверки «Установить» на телефоне
-				// лучше `npm run build && npm run preview -- --host`
-				enabled: false,
-			},
-		}),
+		// PWA temporarily disabled: SW/manifest caused blank pages and 500s on Vercel/TV
 	],
 	resolve: {
 		alias: {
@@ -184,7 +122,7 @@ export default defineConfig({
 	},
 	build: {
 		outDir: 'dist',
-		sourcemap: true,
+		sourcemap: false,
 	},
 	css: {
 		preprocessorOptions: {
