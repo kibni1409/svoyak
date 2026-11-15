@@ -57,22 +57,6 @@
 			"source": "/si/gamehost0/:path*",
 			"destination": "https://vladimirkhil.com/sigameserver-0/:path*"
 		},
-		{
-			"source": "/si/proxy",
-			"destination": "https://server2.vladimirkhil.com:8080"
-		},
-		{
-			"source": "/si/proxy/:path*",
-			"destination": "https://server2.vladimirkhil.com:8080/:path*"
-		},
-		{
-			"source": "/si/content-proxy",
-			"destination": "https://content.vladimirkhil.com:8080"
-		},
-		{
-			"source": "/si/content-proxy/:path*",
-			"destination": "https://content.vladimirkhil.com:8080/:path*"
-		},
 		{ "source": "/loading", "destination": "/index.html" },
 		{ "source": "/license", "destination": "/index.html" },
 		{ "source": "/login", "destination": "/index.html" },

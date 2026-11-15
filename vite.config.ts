@@ -51,6 +51,8 @@ export default defineConfig({
 		react(),
 		VitePWA({
 			registerType: 'autoUpdate',
+			// Temporary: unregister broken SW caches that can blank the app on TV/browsers
+			selfDestroying: true,
 			includeAssets: [
 				'favicon.svg',
 				'config.js',

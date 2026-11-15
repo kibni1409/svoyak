@@ -73,12 +73,10 @@ const connectToSIGameServerAsync = async (
 		const directUri = dataContext.serverUri;
 		const proxyUri = dataContext.proxyUri;
 
-		// Prefer direct first when proxy is off; still try the other URI as fallback.
+		// Only use SIGame :8080 proxy when explicitly enabled — Vercel cannot proxy that port.
 		const candidates = useProxy2 && proxyUri
 			? [proxyUri, directUri]
-			: proxyUri
-				? [directUri, proxyUri]
-				: [directUri];
+			: [directUri];
 
 		const uniqueCandidates = [...new Set(candidates.filter(Boolean))];
 		const listener = new GameServerListener(appDispatch);

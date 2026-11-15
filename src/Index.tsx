@@ -274,8 +274,9 @@ function subscribeToExternalEvents(store: Store<State, any>, host: IHost) {
 }
 
 function validateBrowser() {
+	// Many TV / embedded browsers lack clipboard in a secure context — warn, don't hard-fail.
 	if (!navigator.clipboard && window.isSecureContext) {
-		throw new Error(localization.unsupportedBrowser);
+		console.warn(localization.unsupportedBrowser);
 	}
 }
 

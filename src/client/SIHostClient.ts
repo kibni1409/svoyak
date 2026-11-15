@@ -58,7 +58,10 @@ export default class SIHostClient implements ISIHostClient {
 			connectionBuilder.withUrl(connectionUrl, transportOptions);
 		}
 
-		connectionBuilder.withHubProtocol(new signalRMsgPack.MessagePackHubProtocol());
+		connectionBuilder
+			.withHubProtocol(new signalRMsgPack.MessagePackHubProtocol())
+			.withServerTimeout(30000)
+			.withKeepAliveInterval(15000);
 
 		this.connection = connectionBuilder.build();
 
@@ -121,7 +124,22 @@ export default class SIHostClient implements ISIHostClient {
 			}
 		});
 
-		await this.connection.start();
+		const startPromise = this.connection.start();
+		const timeoutPromise = new Promise<never>((_, reject) => {
+			window.setTimeout(() => reject(new Error('SIHost SignalR connection timeout')), 25000);
+		});
+
+		try {
+			await Promise.race([startPromise, timeoutPromise]);
+		} catch (e) {
+			try {
+				await this.connection.stop();
+			} catch {
+				// ignore
+			}
+			this.connection = undefined;
+			throw e;
+		}
 	}
 
 	async disconnectAsync(): Promise<void> {
